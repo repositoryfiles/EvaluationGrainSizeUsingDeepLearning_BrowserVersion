@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像認識</title>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+</head>
+<body>
+<form id="myForm">
+    <h2>Teachable Machineによる組織画像の粒度番号の推定</h2>
+	画像ファイルを読み込む前に「倍率」と「画像の幅」を設定してください<br>
+	
+	<label>倍率(倍) <input type="text" id="magnification" size="10" value=500></label>
+&nbsp;
+	<label>画像の幅(mm) <input type="text" id="pictureWidth" size="10" value=142></label>
+	<br>
+	<br>
+
+    <input type="file" id="fileInput" accept="image/*">
+    <br><br>
+    <img id="preview" width="400" style="display: none;">
+    
+    <p id="result"></p>
+	<br>
+	<button onclick="reloadPage()">ページをリロードする</button>
+    <script>
+        const URL = "https://teachablemachine.withgoogle.com/models/KbX6tC0qD/";
+		const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        let model;
+		let pictureWidth; //画像の幅（単位：mm）
+		let magnification; //画像の倍率
+        
+        async function loadModel() {
+            try {
+                model = await tmImage.load(modelURL, metadataURL);
+                console.log("モデルがロードされました");
+            } catch (error) {
+                console.error("モデルのロードに失敗しました", error);
+            }
+        }
+        
+		function doReload() {
+			// ページをリロードする
+			window.location.reload();
+		}
+		
+        document.getElementById("fileInput").addEventListener("change", async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const imgElement = document.getElementById("preview");
+			imgElement.src = window.URL.createObjectURL(file);
+            imgElement.style.display = "block";
+            
+            await new Promise(resolve => imgElement.onload = resolve);
+            
+            if (!model) {
+                console.error("モデルがロードされていません");
+                return;
+            }
+
+			//テキストボックスの値を取得
+			magnification = document.getElementById('magnification').value;
+			pictureWidth = document.getElementById('pictureWidth').value;
+
+            const prediction = await model.predict(imgElement);
+            prediction.sort((a, b) => b.probability - a.probability);
+            
+			let g = magnification * 106.5 / pictureWidth;
+			let correct = eval(prediction[0].className) + 6.64 * Math.log10(g / 100);
+			
+            document.getElementById("result").innerText = `粒度番号: ${correct.toFixed(1)} (${(prediction[0].probability * 100).toFixed(1)}%)`;
+        });
+
+        loadModel();
+		
+		function reloadPage() {
+            location.reload();
+        }		
+
+    </script>
+</body>
+</html>
+
