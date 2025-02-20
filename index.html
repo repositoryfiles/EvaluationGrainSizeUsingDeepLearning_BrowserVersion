@@ -68,7 +68,7 @@
 			pictureWidth = document.getElementById('pictureWidth').value;
 
             const prediction = await model.predict(imgElement);
-            prediction.sort((a, b) => b.probability - a.probability);
+            prediction.sort((a, b) => b.probability - a.probability);//確率の高い順にソート
             
 			let g = magnification * 106.5 / pictureWidth;
 			let correct = eval(prediction[0].className) + 6.64 * Math.log10(g / 100);
