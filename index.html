@@ -25,7 +25,7 @@
 	<br>
 	<button onclick="reloadPage()">ページをリロードする</button>
     <script>
-        const URL ="https://teachablemachine.withgoogle.com/models/KbX6tC0qD/";
+        const URL ="https://teachablemachine.withgoogle.com/models/TOGLzsaup/";
         const modelURL = URL + "model.json";
         const metadataURL = URL + "metadata.json";
         let model;
@@ -63,15 +63,15 @@
                 return;
             }
             
-			//テキストボックスの値を取得
-			magnification = document.getElementById('magnification').value;
-			pictureWidth = document.getElementById('pictureWidth').value;
+	    //テキストボックスの値を取得
+     	    magnification = document.getElementById('magnification').value;
+	    pictureWidth = document.getElementById('pictureWidth').value;
 
             const prediction = await model.predict(canvas);
             prediction.sort((a, b) => b.probability - a.probability);
 
             let g = magnification * 142 / pictureWidth;
-			let correct = eval(prediction[0].className) + 6.64 * Math.log10(g / 100);
+	    let correct = eval(prediction[0].className) + 6.64 * Math.log10(g / 100);
 			
             document.getElementById("result").innerText = `結果: ${correct.toFixed(1)} (${(prediction[0].probability * 100).toFixed(1)}%)`;
         });
